@@ -30,9 +30,9 @@ RUN useradd -m -u 1000 -U -s /bin/sh -d /eggnet eggnet && \
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt 
 COPY --from=builder /app/target/release/egg-collator /usr/local/bin
 
-USER eggnet
+RUN chmod uog+x /usr/local/bin/*
 
-RUN sudo chmod uog+x /usr/local/bin/*
+USER eggnet
 
 # 30333 for parachain p2p
 # 9933 for RPC call
