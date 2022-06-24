@@ -1,0 +1,37 @@
+{
+	"name": "@dutterbutter/egg-collator-binary",
+	"version": "0.1.9",
+	"description": "A Shim package that does contain the egg collator Node Binary",
+	"main": "index",
+	"type": "module",
+	"license": "Apache-2.0",
+	"private": false,
+	"engines": {
+		"node": ">=16.0.0"
+	},
+	"exports": {
+		"import": "./index.js",
+		"require": "./index.cjs"
+	},
+	"scripts": {
+		"prepublishOnly": "node ./scripts/prePublish.js"
+	},
+	"bin": {
+		"egg-collator": "./bin/egg-collator"
+	},
+	"files": [
+		"bin/egg-collator",
+		"index.cjs",
+		"index.js"
+	],
+	"repository": {
+		"type": "git",
+		"directory": "packages/egg-collator",
+		"url": "https://github.com/dutterbutter/eggnet.git"
+	},
+	"devDependencies": {
+		"@npmcli/package-json": "^2.0.0",
+		"@types/is-ci": "^3.0.0",
+		"is-ci": "^3.0.1"
+	}
+}
