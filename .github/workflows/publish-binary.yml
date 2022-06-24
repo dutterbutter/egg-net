@@ -46,14 +46,14 @@ jobs:
         with:
           node-version: "16.x"
           cache: "yarn"
-          cache-dependency-path: packages/eggnet-collator-binary/yarn.lock
+          cache-dependency-path: packages/egg-collator-binary/yarn.lock
           registry-url: "https://npm.pkg.github.com"
           # Defaults to the user or organization that owns the workflow file
           scope: "@dutterbutter"
       - run: yarn
-        working-directory: packages/eggnet-collator-binary
+        working-directory: packages/egg-collator-binary
       - run: yarn publish
-        working-directory: packages/eggnet-collator-binary
+        working-directory: packages/egg-collator-binary
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Push changes
