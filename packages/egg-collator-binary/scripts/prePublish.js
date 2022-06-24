@@ -21,7 +21,7 @@ import { copyFileSync } from "node:fs";
 import PackageJson from "@npmcli/package-json";
 import isCI from "is-ci";
 
-const CRATE_NAME = "dkg-standalone-node";
+const CRATE_NAME = "egg-collator";
 
 async function packageJsonInfo() {
 	const packageInfo = await PackageJson.load("./");
@@ -33,7 +33,7 @@ async function packageNameWithoutOrgnization() {
 	return packageInfo.content.name.replace(/^@[^/]+\//, "");
 }
 
-/// A function which will start building the dkg-standalone-node binary.
+/// A function which will start building the egg-collator binary.
 function build() {
 	spawnSync(
 		"cargo",
