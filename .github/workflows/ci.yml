@@ -1,39 +1,48 @@
-name: Build & Test
+name: check
 
-# Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
-  # Allows you to run this workflow manually from the Actions tab
+    paths-ignore:
+      - 'README.md'
+  
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  ci:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+  rustfmt:
+    concurrency:
+      group: rustfmt-${{ github.ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
     steps:
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.9.1
+      - uses: actions/checkout@v3
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
         with:
-          access_token: ${{ github.token }}
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+          toolchain: nightly
+          override: true
+          components: rustfmt
+
+      - name: Rustfmt check
+        run: cargo +nightly fmt --all -- --check
+
+  test:
+    concurrency:
+      group: test-${{ github.ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    steps:
       - uses: actions/checkout@v3
 
-      - name: Set-Up
-        run: sudo apt install -y cmake pkg-config libssl-dev git build-essential clang libclang-dev curl
-
       - name: Install toolchain
-        uses: actions-rs/toolchain@v1
+        id: toolchain
+        uses: actions-rs/toolchain@master
         with:
           profile: minimal
           toolchain: nightly
+          target: wasm32-unknown-unknown
 
       - name: Install cargo-nextest
         uses: baptiste0928/cargo-install@v1
@@ -41,27 +50,52 @@ jobs:
           crate: cargo-nextest
           version: latest
 
-      - name: Cache Cargo
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            ~/.cargo/bin
-            target
-            target/debug
-            target/release
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v1.3.0
 
-      - name: Check Format
-        run: |
-          cargo fmt --all -- --check
-      - name: Clippy
-        run: |
-          cargo clippy --all-targets --workspace -- --deny warnings
-      - name: Check Build
-        run: |
-          cargo check --release
-      - name: Test
-        run: |
-          cargo nextest run --release --workspace
+      - name: Run test suite
+        run: cargo nextest run --release
+      
+  clippy:
+    concurrency:
+      group: clippy-${{ github.ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install toolchain
+        id: toolchain
+        uses: actions-rs/toolchain@master
+        with:
+          profile: minimal
+          toolchain: nightly
+          target: wasm32-unknown-unknown
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v1.3.0
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --workspace -- --deny warnings
+
+  build:
+    concurrency:
+      group: build-${{ github.ref }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install toolchain
+        id: toolchain
+        uses: actions-rs/toolchain@master
+        with:
+          profile: minimal
+          toolchain: nightly
+          target: wasm32-unknown-unknown
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v1.3.0
+
+      - name: Check
+        run: cargo check --release
